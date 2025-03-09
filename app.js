@@ -33,3 +33,17 @@ function shuffle (src) {
 /**********************************************
  * YOUR CODE BELOW
  **********************************************/
+
+const words = [
+  "PAPER",
+  "BUFFOON",
+  "DRAGON",
+  "MALICE",
+  "BOY",
+  "WEISENHEIMER",
+  "NOSEBAGGER",
+  "MOOT",
+  "GOOFBALL",
+  "THEOCRACY"
+];
+
