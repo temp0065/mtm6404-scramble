@@ -56,12 +56,25 @@ const PassBtn = ({ passes }) => {
 };
 
 
-const ScrabbleForm = ({ handleFormChange, onWordGuess, formValue, gameOver }) => {
+const ScrabbleForm = ({ onWordGuess, gameOver }) => {
+  const [guess, setGuess] = React.useState("");
+
+  const handleFormChange = (e) => {
+    setGuess(e.target.value);
+  }
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    onWordGuess(guess);
+    // Clears the guess state
+    setGuess("");
+  }
 
   return (
-    <form onSubmit={onWordGuess} className="field is-grouped">
+    <form onSubmit={handleFormSubmit} className="field is-grouped">
       <div className="control is-expanded">
-        <input type="text" className="input" onChange={handleFormChange} value={formValue} disabled={gameOver} />
+        <input type="text" className="input" value={guess} onChange={handleFormChange} disabled={gameOver} />
       </div>
       <div>
         <button type="submit" className="button is-primary" disabled={gameOver}>Submit Guess</button>
@@ -71,17 +84,15 @@ const ScrabbleForm = ({ handleFormChange, onWordGuess, formValue, gameOver }) =>
 };
 
 const ScrabbleWord = ({ word }) => {
-  return (<h2 className="title is-2 has-text-centered">{word}</h2>)
+  return <h2 className="title is-2 has-text-centered">{word}</h2>
 };
 
 const ScrabbleScore = ({ type, typeAccumulated }) => {
   return (
-    <>
-      <div>
-        <h3>{typeAccumulated}</h3>
-        <p>{type}</p>
-      </div>
-    </>
+    <div>
+      <h3>{typeAccumulated}</h3>
+      <p>{type}</p>
+    </div>
   )
 };
 
@@ -97,7 +108,7 @@ const ScrabbleScoreboard = ({ points, strikes }) => {
 
 const App = () => {
   const [playerData, setPlayerData] = React.useState(() => {
-    const savedValues = localStorage.getItem(JSON.parse(playerData));
+    const savedValues = JSON.parse(localStorage.getItem("playerData"));
     if (savedValues) {
       return savedValues;
     }
@@ -115,32 +126,32 @@ const App = () => {
 
   const maxStrikes = 3;
 
+  // Updates local storage when playerData is modified
   React.useEffect(() => {
-    localStorage.setItem(JSON.stringify(playerData))
+    localStorage.setItem("playerData", JSON.stringify(playerData))
   }, [playerData])
 
-  const handleWordGuess = (e) => {
-    e.preventDefault();
+  const handleWordGuess = (guess) => {
 
-    if (gameOver) return;
+    if (playerData.gameOver) return;
 
-    if (e.target.value.toLowerCase() === words[0].toLowerCase()) {
+    if (guess.toLowerCase() === playerData.words[0].toLowerCase()) {
       setPlayerData(prevData => ({
         ...prevData,
         words: prevData.words.slice(1),
-        points: points + 1,
+        points: prevData.points + 1,
         guessType: 0
       }));
     }
     else {
       setPlayerData(prevData => ({
         ...prevData,
-        strikes: strikes + 1,
+        strikes: prevData.strikes + 1,
         guessType: -1
       }));
     }
 
-    if (strikes >= maxStrikes || words.length <= 0) {
+    if (playerData.strikes >= maxStrikes || playerData.words.length <= 0) {
       setPlayerData(prevData => ({
         ...prevData,
         gameOver: true
@@ -149,7 +160,7 @@ const App = () => {
   }
 
   const handlePlayAgain = () => {
-    setPlayerData(prevData => ({
+    setPlayerData(() => ({
       words: shuffle(initialWords),
       numPasses: 3,
       strikes: 0,
@@ -160,18 +171,16 @@ const App = () => {
   }
 
   return (
-    <>
-      <section className="container is-max-desktop">
-        <h1 className="title is-1 has-text-white has-text-centered">Welcome To Scrabble</h1>
-        <ScrabbleScoreboard points={playerData.points} strikes={playerData.strikes} />
-        <ScrabbleWord word={shuffle(playerData.words[0])} />
-        <ScrabbleForm onWordGuess={handleWordGuess} gameOver={playerData.gameOver} />
-        <div className="is-flex is-flex-direction-column is-justify-content-center">
-          <PassBtn passes={playerData.numPasses} />
-          {playerData.gameOver && <button className="button is-info" onClick={handlePlayAgain}>Play Again</button>}
-        </div>
-      </section>
-    </>
+    <main className="container is-max-desktop">
+      <h1 className="title is-1 has-text-white has-text-centered">Welcome To Scrabble</h1>
+      <ScrabbleScoreboard points={playerData.points} strikes={playerData.strikes} />
+      <ScrabbleWord word={shuffle(playerData.words[0])} />
+      <ScrabbleForm onWordGuess={handleWordGuess} gameOver={playerData.gameOver} />
+      <div className="is-flex is-flex-direction-column is-justify-content-center">
+        <PassBtn passes={playerData.numPasses} />
+        {playerData.gameOver && <button className="button is-info" onClick={handlePlayAgain}>Play Again</button>}
+      </div>
+    </main>
   );
 };
 
