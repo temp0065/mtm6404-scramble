@@ -48,7 +48,6 @@ const initialWords = [
 ];
 
 const ProgressBar = ({ progress }) => {
-  console.log(progress)
   return (
     <progress className="progress is-info" value={!progress ? 100 : Math.abs(((progress - 10) * 10))} max="100"></progress>
   )
@@ -79,7 +78,7 @@ const GuessAlert = ({ children, correct }) => {
 
 const PassBtn = ({ passes, onPass, gameOver }) => {
   return (
-    <button type="button" className="button is-warning is-outlined is-align-self-center" disabled={!passes || gameOver} onClick={onPass}>
+    <button type="button" className="button is-warning is-align-self-center" disabled={!passes || gameOver} onClick={onPass}>
       {passes} Passes Remaining
     </button>
   )
@@ -163,7 +162,6 @@ const App = () => {
     }
   })
 
-  console.log(playerData.words)
   const maxStrikes = 3;
 
   // Updates local storage when playerData is modified
@@ -243,10 +241,15 @@ const App = () => {
   return (
     <main className="container is-max-desktop is-flex is-flex-direction-column is-justify-content-center p-5" style={{ height: "100vh" }}>
       <h1 className="title is-1 has-text-white has-text-centered has-text-primary">Welcome To Scramble</h1>
-      <p class="subtitle is-4 has-text-centered">Guess All The Scrambled Words To Win</p>
+      <p className="subtitle is-4 has-text-centered">Guess All The Scrambled Words To Win</p>
       <ProgressBar progress={playerData.words.length} />
       <ScrambleScoreboard points={playerData.points} strikes={playerData.strikes} />
-      {playerData.guessCorrect !== null && <GuessAlert correct={playerData.guessCorrect}>{playerData.guessCorrect ? "Correct" : "Wrong"}</GuessAlert>}
+      {
+        !playerData.gameOver ? 
+          (playerData.guessCorrect !== null && <GuessAlert correct={playerData.guessCorrect}>{playerData.guessCorrect ? <p>Correct</p> : <p>Wrong</p>}</GuessAlert>)
+        :
+          (<GuessAlert correct={playerData.guessCorrect}>{playerData.gameOver && playerData.strikes < maxStrikes && playerData.words.length <= 0 ? <h3>Congratulations, You Win!</h3> : <h3>You Lose</h3>}</GuessAlert>)
+      }
       <ScrambleWord word={playerData.word} />
       <ScrambleForm onWordGuess={handleWordGuess} gameOver={playerData.gameOver} />
       <div className="is-flex is-flex-direction-column is-justify-content-center">
